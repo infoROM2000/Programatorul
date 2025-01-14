@@ -67,7 +67,7 @@
                 ></td
               >
               <td
-                ><button onclick={() => users.remove(user)} class:hidden={locked}
+                ><button onclick={() => users.remove(user)} hidden={locked}
                   >{trash}</button
                 ></td
               >
@@ -76,7 +76,7 @@
         </tbody>
       </table>
     </details>
-    <div class:hidden={locked}>
+    <div hidden={locked}>
       <label>Adauga: </label>
       <input id="newUser" type="text" />
       <button onclick={() => addUser()}>+</button>
