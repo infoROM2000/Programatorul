@@ -2,23 +2,37 @@
   import { User, users } from "$lib/User";
   import { writable } from "svelte/store";
   const K = 20;
-  let locked = true;
-  const sessionPlayers = writable<User[]>([]);
-  function addUser() {
-    let newUser = document.getElementById("newUser") as HTMLInputElement;
-    let name: string = newUser?.value ?? "";
-    if (name == "") return;
-    else {
-      let user = new User(name);
-      users.push(user);
-      newUser.value = "";
-    }
-  }
   const closedLock = "\u{1F512}";
   const openLock = "\u{1F513}";
   const plus = "\u{2795}";
   const minus = "\u{2796}";
-  const trash = "\u{1F5D1}"
+  const trash = "\u{1F5D1}";
+  let locked = true;
+  interface Option {
+    value: string;
+    description: string;
+  }
+  const tournamentType: Option[] = [
+    { value: "cup", description: "Cupa" },
+    { value: "swiss", description: "Swiss" },
+    { value: "roundrobin", description: "Campionat" },
+  ];
+  const matchingAlgorithm: Option[] = [
+    { value: "random", description: "Aleator" },
+    { value: "sameElo", description: "Valori apropiate" },
+    { value: "differentElo", description: "Dezechilibrat" },
+  ];
+  const sessionPlayers = writable<User[]>([]);
+  let newUser: string = "";
+  function addUser() {
+    let name: string = newUser ?? "";
+    if (name == "") return;
+    else {
+      let user = new User(name);
+      users.push(user);
+      newUser = "";
+    }
+  }
   function editUsers() {
     locked = locked ? false : true;
   }
@@ -54,7 +68,14 @@
         </thead>
         <tbody>
           {#each $users as user}
-            <tr class:green={$sessionPlayers.some((player) => player.id === user.id)} class:red={!$sessionPlayers.some((player) => player.id === user.id)}>
+            <tr
+              class:green={$sessionPlayers.some(
+                (player) => player.id === user.id,
+              )}
+              class:red={!$sessionPlayers.some(
+                (player) => player.id === user.id,
+              )}
+            >
               <td><a href="users/{user.name}">{user.name}</a></td>
               <td>{user.elo}</td>
               <td
@@ -77,8 +98,8 @@
       </table>
     </details>
     <div hidden={locked}>
-      <label>Adauga: </label>
-      <input id="newUser" type="text" />
+      <label for="addUser">Adauga: </label>
+      <input type="text" bind:value={newUser} />
       <button onclick={() => addUser()}>+</button>
     </div>
     <details>
@@ -87,22 +108,26 @@
     <details>
       <summary>Generatorul</summary>
       <p>
-        Selectati participantii la actuala sesiune din meniul participanti apasand plus pentru
-        fiecare invitat
+        Selectati participantii la actuala sesiune din meniul participanti
+        apasand plus pentru fiecare invitat. Momentat ati selectat {$sessionPlayers.length}
+        persoane
       </p>
       <label for="format">Format:</label>
       <select>
-        <option value="cup">Cupa (necesita nr de participanti putere a lui 2)</option>
-        <option value="swiss">Swiss (recomandat pentru mai mult de 6 participanti)</option>
-        <option value="championship">Campionat (recomandat pentru mai putin de 6 participanti)</option>
+        {#each tournamentType as type}
+          <option value={type.value}>{type.description}</option>
+        {/each}
       </select>
       <label for="algoritm">Algoritm:</label>
       <select>
-        <option value="random">Aleator</option>
-        <option value="same">Valori apropiate</option>
-        <option value="different">Valori opuse</option>
+        {#each matchingAlgorithm as type}
+          <option value={type.value}>{type.description}</option>
+        {/each}
       </select>
       <label for="runde">Nr. runde (doar pentru Swiss)</label>
+      <input type="number" max={$sessionPlayers.length - 2} />
+      <input type="checkbox" value="WeakWhite" />
+      <label for="WeakWhite">Jucatorul mai slab primeste mereu albele</label>
     </details>
   </div>
 </main>
@@ -113,10 +138,10 @@
   td {
     border: 10px black;
   }
-  .red{
+  .red {
     background-color: red;
   }
-  .green{
+  .green {
     background-color: green;
   }
 </style>

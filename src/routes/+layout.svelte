@@ -15,7 +15,7 @@
 		margin-bottom: 5%;
 		text-align: justify;
 		text-justify: inter-word;
-        background-image: url("chess.jpg");
+        background-image: url("./chess.jpg");
 	}
     #letter{
         background-color: grey;
