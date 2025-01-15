@@ -104,6 +104,18 @@
     </div>
     <details>
       <summary>Istoric</summary>
+      <label for="addMatch">Adauga joc amical (in afara turneului):</label>
+      <select>
+        {#each $users as user}
+        <option value={user.id}>{user.name}</option>
+        {/each}
+      </select>
+      <select>
+        {#each $users as user}
+        <option value={user.id}>{user.name}</option>
+        {/each}
+      </select>
+      <button onclick={()=>addUser()}>+</button>
     </details>
     <details>
       <summary>Generatorul</summary>
@@ -125,7 +137,7 @@
         {/each}
       </select>
       <label for="runde">Nr. runde (doar pentru Swiss)</label>
-      <input type="number" max={$sessionPlayers.length - 2} />
+      <input type="number" min=0 max={$sessionPlayers.length - 2} />
       <input type="checkbox" value="WeakWhite" />
       <label for="WeakWhite">Jucatorul mai slab primeste mereu albele</label>
     </details>
