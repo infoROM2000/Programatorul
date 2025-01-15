@@ -22,28 +22,52 @@
     { value: "sameElo", description: "Valori apropiate" },
     { value: "differentElo", description: "Dezechilibrat" },
   ];
-  const sessionPlayers = writable<User[]>([]);
+  let selectedTournamentType: string;
+  let selectedMatchingAlgorithm: string;
+  let sessionPlayers = writable<User[]>([]);
   let newUser: string = "";
+  let start = false;
   function addUser() {
-    let name: string = newUser ?? "";
-    if (name == "") return;
+    if (newUser == "") return;
     else {
-      let user = new User(name);
+      let user = new User(newUser);
       users.push(user);
       newUser = "";
     }
   }
-  function editUsers() {
-    locked = locked ? false : true;
-  }
   function sessionToggle(user: User) {
     sessionPlayers.update((players) => {
       if (players.find((e) => e.id === user.id)) {
-        return players.filter((e) => e.id !== user.id);
+        //if player is in session
+        return players.filter((e) => e.id !== user.id); // remove it
       } else {
-        return [...players, user];
+        return [...players, user]; //else add it
       }
     });
+  }
+  function generate() {
+    if (selectedTournamentType == "cup") {
+      if (powerof2($sessionPlayers.length)) {
+        console.log("OK");
+        sessionPlayers.update((sessionPlayers) => {
+          return initialRound(sessionPlayers);
+        });
+        start = true;
+      }
+    }
+  }
+  function initialRound(sessionPlayers: User[]) {
+    let result: User[] = [];
+    let index = 0;
+    while (sessionPlayers.length > 0) {
+      index = Math.floor(Math.random() * sessionPlayers.length);
+      result.push(sessionPlayers[index]);
+      sessionPlayers=sessionPlayers.filter((e) => e.id !== sessionPlayers[index].id);
+    }
+    return result;
+  }
+  function powerof2(n: number) {
+    return n > 1 && (n & (n - 1)) === 0;
   }
 </script>
 
@@ -57,7 +81,11 @@
             <td><button onclick={() => users.sort("name")}>Nume</button></td>
             <td><button onclick={() => users.sort("elo")}>Elo</button></td>
             <td
-              ><button onclick={() => editUsers()}>
+              ><button
+                onclick={() => {
+                  locked = locked ? false : true;
+                }}
+              >
                 {#if locked}{closedLock}
                 {:else}
                   {openLock}
@@ -107,15 +135,15 @@
       <label for="addMatch">Adauga joc amical (in afara turneului):</label>
       <select>
         {#each $users as user}
-        <option value={user.id}>{user.name}</option>
+          <option value={user.id}>{user.name}</option>
         {/each}
       </select>
       <select>
         {#each $users as user}
-        <option value={user.id}>{user.name}</option>
+          <option value={user.id}>{user.name}</option>
         {/each}
       </select>
-      <button onclick={()=>addUser()}>+</button>
+      <button onclick={() => addUser()}>+</button>
     </details>
     <details>
       <summary>Generatorul</summary>
@@ -125,21 +153,29 @@
         persoane
       </p>
       <label for="format">Format:</label>
-      <select>
+      <select bind:value={selectedTournamentType}>
         {#each tournamentType as type}
           <option value={type.value}>{type.description}</option>
         {/each}
       </select>
       <label for="algoritm">Algoritm:</label>
-      <select>
+      <select bind:value={selectedMatchingAlgorithm}>
         {#each matchingAlgorithm as type}
           <option value={type.value}>{type.description}</option>
         {/each}
       </select>
-      <label for="runde">Nr. runde (doar pentru Swiss)</label>
-      <input type="number" min=0 max={$sessionPlayers.length - 2} />
       <input type="checkbox" value="WeakWhite" />
       <label for="WeakWhite">Jucatorul mai slab primeste mereu albele</label>
+      <div hidden={selectedTournamentType != "swiss"}>
+        <label for="runde">Nr. runde</label>
+        <input type="number" min="1" max={$sessionPlayers.length - 2} />
+      </div>
+      <button onclick={() => generate()}>Genereaza</button>
+      {#if start}
+        {#each $sessionPlayers as player}
+          <p>{player.name}-{player.elo}</p>
+        {/each}
+      {/if}
     </details>
   </div>
 </main>
