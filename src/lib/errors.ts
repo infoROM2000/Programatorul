@@ -1,0 +1,1 @@
+export const e1="Numarul de jucatori in cupa trebuie sa fie putere a lui 2!"
